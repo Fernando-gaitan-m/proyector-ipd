@@ -250,4 +250,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   renderGrid();
+
+  setTimeout(() => {
+    splash.classList.add('splash--hide');
+    setTimeout(() => splash.classList.add('splash--removed'), 500);
+  }, 1100);
 });
