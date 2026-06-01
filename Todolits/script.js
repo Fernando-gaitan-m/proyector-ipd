@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const editorDelete = document.getElementById('editorDelete');
   const toolbarBtns = document.querySelectorAll('.toolbar-btn');
 
+  const splash = document.getElementById('splash');
   let notes = loadNotes();
   let activeNoteId = null;
   let isNewNote = false;
@@ -101,7 +102,12 @@ document.addEventListener('DOMContentLoaded', () => {
       editor.classList.remove('editor--closing');
       activeNoteId = null;
       isNewNote = false;
-      renderGrid();
+  renderGrid();
+
+  setTimeout(() => {
+    splash.classList.add('splash--hide');
+    setTimeout(() => splash.classList.add('splash--removed'), 500);
+  }, 1100);
     }, 250);
   }
 
