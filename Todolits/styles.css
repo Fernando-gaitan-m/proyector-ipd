@@ -293,22 +293,36 @@ body {
   z-index: 100;
   display: none;
   flex-direction: column;
-  will-change: transform;
+  will-change: clip-path;
 }
 
 .editor--open {
   display: flex;
-  animation: editorIn 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: editorIn 350ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.editor--closing {
+  display: flex;
+  animation: editorOut 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
 }
 
 @keyframes editorIn {
-  from { transform: translateX(100%); opacity: 0.5; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    clip-path: circle(0% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+  }
+  to {
+    clip-path: circle(150% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+  }
 }
 
 @keyframes editorOut {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0.5; }
+  from {
+    clip-path: circle(150% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+  }
+  to {
+    clip-path: circle(0% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+  }
 }
 
 .editor__header {

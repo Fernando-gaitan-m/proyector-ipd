@@ -93,13 +93,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeEditor() {
+    if (editor.classList.contains('editor--closing')) return;
+    if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; }
     editor.classList.remove('editor--open');
-    activeNoteId = null;
-    isNewNote = false;
-    renderGrid();
+    editor.classList.add('editor--closing');
+    setTimeout(() => {
+      editor.classList.remove('editor--closing');
+      activeNoteId = null;
+      isNewNote = false;
+      renderGrid();
+    }, 250);
   }
 
   function saveCurrentNote() {
+    if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; }
     const title = editorTitle.value.trim();
     const content = editorContent.innerHTML.trim();
     const isEmpty = title === '' && (content === '' || content === '<br>');
