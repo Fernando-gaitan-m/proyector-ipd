@@ -1,15 +1,166 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('todoForm');
-  const input = document.getElementById('todoInput');
-  const list = document.getElementById('todoList');
-  const itemCount = document.getElementById('itemCount');
-  const footer = document.getElementById('todoFooter');
-  const clearBtn = document.getElementById('clearCompleted');
-  const filterBtns = document.querySelectorAll('.todoapp__filter');
-
   const themeToggle = document.getElementById('themeToggle');
-  let todos = loadTodos();
-  let currentFilter = 'all';
+  const notesGrid = document.getElementById('notesGrid');
+  const addNoteBtn = document.getElementById('addNoteBtn');
+  const editor = document.getElementById('editor');
+  const editorBack = document.getElementById('editorBack');
+  const editorTitle = document.getElementById('editorTitle');
+  const editorContent = document.getElementById('editorContent');
+  const editorDate = document.getElementById('editorDate');
+  const editorDelete = document.getElementById('editorDelete');
+  const toolbarBtns = document.querySelectorAll('.toolbar-btn');
+
+  let notes = loadNotes();
+  let activeNoteId = null;
+  let saveTimeout = null;
+  let isEditorDirty = false;
+
+  function loadNotes() {
+    try {
+      const data = localStorage.getItem('notes');
+      return data ? JSON.parse(data) : [];
+    } catch { return []; }
+  }
+
+  function saveNotes() {
+    localStorage.setItem('notes', JSON.stringify(notes));
+  }
+
+  function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'Ahora mismo';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} min`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
+    if (diff < 172800000) return 'Ayer';
+    return d.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  }
+
+  function stripHtml(html) {
+    const t = document.createElement('div');
+    t.innerHTML = html;
+    return t.textContent || t.innerText || '';
+  }
+
+  function renderGrid() {
+    if (notes.length === 0) {
+      notesGrid.innerHTML = `
+        <div class="notes-empty">
+          <span class="notes-empty__icon">📝</span>
+          No hay notas aún. ¡Crea una!
+        </div>`;
+      return;
+    }
+    notesGrid.innerHTML = notes.map(n => `
+      <div class="note-card" data-id="${n.id}">
+        <div class="note-card__title">${n.title || 'Sin título'}</div>
+        <div class="note-card__preview">${stripHtml(n.content).slice(0, 120) || 'Nota vacía'}</div>
+        <div class="note-card__date">${formatDate(n.updatedAt)}</div>
+      </div>
+    `).join('');
+  }
+
+  function openEditor(noteId) {
+    activeNoteId = noteId;
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+
+    editorTitle.value = note.title || '';
+    editorContent.innerHTML = note.content || '';
+    editorDate.textContent = `Creada: ${new Date(note.createdAt).toLocaleString('es')}  ·  Modificada: ${new Date(note.updatedAt).toLocaleString('es')}`;
+    editor.classList.add('editor--open');
+    isEditorDirty = false;
+
+    setTimeout(() => {
+      if (note.content) {
+        editorContent.focus();
+        const sel = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(editorContent);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else {
+        editorContent.focus();
+      }
+    }, 350);
+  }
+
+  function closeEditor() {
+    editor.classList.remove('editor--open');
+    activeNoteId = null;
+    renderGrid();
+  }
+
+  function saveCurrentNote() {
+    if (!activeNoteId) return;
+    const note = notes.find(n => n.id === activeNoteId);
+    if (!note) return;
+
+    const title = editorTitle.value.trim();
+    const content = editorContent.innerHTML.trim();
+
+    if (title === '' && (content === '' || content === '<br>')) {
+      return;
+    }
+
+    note.title = title;
+    note.content = content;
+    note.updatedAt = Date.now();
+    saveNotes();
+    isEditorDirty = false;
+  }
+
+  function createNote() {
+    const note = {
+      id: generateId(),
+      title: '',
+      content: '',
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    notes.unshift(note);
+    saveNotes();
+    renderGrid();
+    openEditor(note.id);
+  }
+
+  function deleteNote(id) {
+    notes = notes.filter(n => n.id !== id);
+    saveNotes();
+    closeEditor();
+  }
+
+  function handleToolbarClick(e) {
+    const btn = e.target.closest('.toolbar-btn');
+    if (!btn) return;
+
+    const cmd = btn.dataset.cmd;
+    const val = btn.dataset.val || null;
+
+    editorContent.focus();
+
+    if (cmd === 'formatBlock' && val) {
+      document.execCommand('formatBlock', false, val);
+    } else {
+      document.execCommand(cmd, false, val);
+    }
+
+    btn.classList.toggle('toolbar-btn--active', document.queryCommandState(cmd));
+
+    markDirty();
+  }
+
+  function markDirty() {
+    isEditorDirty = true;
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveCurrentNote, 600);
+  }
 
   function getPreferredTheme() {
     const saved = localStorage.getItem('theme');
@@ -32,149 +183,44 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTheme(currentTheme);
   });
 
-  function loadTodos() {
-    try {
-      const data = localStorage.getItem('todos');
-      return data ? JSON.parse(data) : [];
-    } catch {
-      return [];
-    }
-  }
+  addNoteBtn.addEventListener('click', createNote);
 
-  function saveTodos() {
-    localStorage.setItem('todos', JSON.stringify(todos));
-  }
+  notesGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.note-card');
+    if (card) openEditor(card.dataset.id);
+  });
 
-  function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  }
+  editorBack.addEventListener('click', () => {
+    if (isEditorDirty) saveCurrentNote();
+    closeEditor();
+  });
 
-  function getFilteredTodos() {
-    if (currentFilter === 'active') return todos.filter(t => !t.completed);
-    if (currentFilter === 'completed') return todos.filter(t => t.completed);
-    return todos;
-  }
+  editorTitle.addEventListener('input', markDirty);
+  editorContent.addEventListener('input', markDirty);
 
-  function getActiveCount() {
-    return todos.filter(t => !t.completed).length;
-  }
-
-  function render() {
-    const filtered = getFilteredTodos();
-    list.innerHTML = '';
-
-    if (filtered.length === 0) {
-      const empty = document.createElement('li');
-      empty.className = 'todoapp__empty';
-      empty.textContent = currentFilter === 'all'
-        ? 'No hay tareas aún. ¡Agrega una!'
-        : currentFilter === 'active'
-          ? '¡No hay tareas pendientes!'
-          : 'No hay tareas completadas.';
-      list.appendChild(empty);
-    } else {
-      filtered.forEach(todo => {
-        const li = document.createElement('li');
-        li.className = 'todo-item';
-        li.dataset.id = todo.id;
-
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'todo-item__checkbox';
-        checkbox.checked = todo.completed;
-        checkbox.setAttribute('aria-label', `Marcar "${todo.text}" como ${todo.completed ? 'pendiente' : 'completada'}`);
-
-        const span = document.createElement('span');
-        span.className = `todo-item__text${todo.completed ? ' todo-item__text--completed' : ''}`;
-        span.textContent = todo.text;
-
-        const delBtn = document.createElement('button');
-        delBtn.className = 'todo-item__delete';
-        delBtn.textContent = '✕';
-        delBtn.setAttribute('aria-label', `Eliminar "${todo.text}"`);
-
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(delBtn);
-        list.appendChild(li);
-      });
-    }
-
-    const count = getActiveCount();
-    itemCount.textContent = `${count} tarea${count !== 1 ? 's' : ''} pendiente${count !== 1 ? 's' : ''}`;
-    footer.classList.toggle('todoapp__footer--hidden', todos.length === 0);
-  }
-
-  function addTodo(text) {
-    todos.push({
-      id: generateId(),
-      text: text.trim(),
-      completed: false,
-      createdAt: Date.now()
-    });
-    saveTodos();
-    render();
-  }
-
-  function toggleTodo(id) {
-    const todo = todos.find(t => t.id === id);
-    if (todo) {
-      todo.completed = !todo.completed;
-      saveTodos();
-      render();
-    }
-  }
-
-  function deleteTodo(id) {
-    todos = todos.filter(t => t.id !== id);
-    saveTodos();
-    render();
-  }
-
-  function clearCompleted() {
-    todos = todos.filter(t => !t.completed);
-    saveTodos();
-    render();
-  }
-
-  function setFilter(filter) {
-    currentFilter = filter;
-    filterBtns.forEach(btn => {
-      const isActive = btn.dataset.filter === filter;
-      btn.classList.toggle('todoapp__filter--active', isActive);
-    });
-    render();
-  }
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = input.value.trim();
-    if (text) {
-      addTodo(text);
-      input.value = '';
-      input.focus();
+  editorContent.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      document.execCommand('insertHTML', false, '&emsp;&emsp;');
     }
   });
 
-  list.addEventListener('change', (e) => {
-    if (e.target.classList.contains('todo-item__checkbox')) {
-      const li = e.target.closest('.todo-item');
-      toggleTodo(li.dataset.id);
+  editorDelete.addEventListener('click', () => {
+    if (confirm('¿Eliminar esta nota?')) {
+      deleteNote(activeNoteId);
     }
   });
 
-  list.addEventListener('click', (e) => {
-    if (e.target.classList.contains('todo-item__delete')) {
-      const li = e.target.closest('.todo-item');
-      deleteTodo(li.dataset.id);
+  toolbarBtns.forEach(btn => {
+    btn.addEventListener('click', handleToolbarClick);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && editor.classList.contains('editor--open')) {
+      if (isEditorDirty) saveCurrentNote();
+      closeEditor();
     }
   });
 
-  clearBtn.addEventListener('click', clearCompleted);
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => setFilter(btn.dataset.filter));
-  });
-
-  render();
+  renderGrid();
 });

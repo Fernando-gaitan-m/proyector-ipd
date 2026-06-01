@@ -3,48 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Todolist - Gestión de tareas simple y eficiente">
-  <title>TodoList</title>
+  <meta name="description" content="Notas - App de notas simple y eficiente">
+  <title>Notas</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="todoapp">
-    <header class="todoapp__header">
-      <h1 class="todoapp__title">TodoList</h1>
-      <button class="todoapp__theme-btn" id="themeToggle" aria-label="Cambiar tema">🌙</button>
+  <main class="app" id="app">
+    <header class="app__header">
+      <h1 class="app__title">Notas</h1>
+      <button class="app__theme-btn" id="themeToggle" aria-label="Cambiar tema">🌙</button>
     </header>
 
-    <section class="todoapp__new">
-      <form class="todo-form" id="todoForm" aria-label="Nueva tarea">
-        <input
-          type="text"
-          class="todo-form__input"
-          id="todoInput"
-          placeholder="¿Qué necesitas hacer?"
-          autocomplete="off"
-          required
-          aria-label="Nueva tarea"
-        >
-        <button type="submit" class="todo-form__btn" aria-label="Agregar tarea">
-          +
-        </button>
-      </form>
-    </section>
+    <section class="notes-grid" id="notesGrid"></section>
 
-    <section class="todoapp__list" aria-label="Lista de tareas">
-      <ul class="todo-list" id="todoList"></ul>
-    </section>
-
-    <footer class="todoapp__footer" id="todoFooter">
-      <span class="todoapp__count" id="itemCount">0 tareas pendientes</span>
-      <nav class="todoapp__filters" aria-label="Filtros">
-        <button class="todoapp__filter todoapp__filter--active" data-filter="all">Todas</button>
-        <button class="todoapp__filter" data-filter="active">Activas</button>
-        <button class="todoapp__filter" data-filter="completed">Completadas</button>
-      </nav>
-      <button class="todoapp__clear" id="clearCompleted">Limpiar completadas</button>
-    </footer>
+    <button class="app__fab" id="addNoteBtn" aria-label="Nueva nota">+</button>
   </main>
+
+  <aside class="editor" id="editor">
+    <header class="editor__header">
+      <button class="editor__back" id="editorBack" aria-label="Volver">←</button>
+      <input class="editor__title" id="editorTitle" type="text" placeholder="Título">
+      <button class="editor__delete" id="editorDelete" aria-label="Eliminar nota">🗑️</button>
+    </header>
+
+    <div class="editor__toolbar" id="editorToolbar">
+      <button class="toolbar-btn" data-cmd="bold" aria-label="Negrita"><strong>B</strong></button>
+      <button class="toolbar-btn" data-cmd="italic" aria-label="Cursiva"><em>I</em></button>
+      <button class="toolbar-btn" data-cmd="underline" aria-label="Subrayado"><u>U</u></button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" data-cmd="formatBlock" data-val="h1" aria-label="Título 1">H1</button>
+      <button class="toolbar-btn" data-cmd="formatBlock" data-val="h2" aria-label="Título 2">H2</button>
+      <button class="toolbar-btn" data-cmd="formatBlock" data-val="h3" aria-label="Título 3">H3</button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" data-cmd="insertUnorderedList" aria-label="Lista">•</button>
+      <button class="toolbar-btn" data-cmd="insertOrderedList" aria-label="Lista numerada">1.</button>
+      <span class="toolbar-sep"></span>
+      <button class="toolbar-btn" data-cmd="removeFormat" aria-label="Limpiar formato">↺</button>
+    </div>
+
+    <div class="editor__content" id="editorContent" contenteditable="true" placeholder="Escribe algo..."></div>
+
+    <div class="editor__date" id="editorDate"></div>
+  </aside>
 
   <script src="script.js"></script>
 </body>
