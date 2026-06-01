@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let notes = loadNotes();
   let activeNoteId = null;
+  let isNewNote = false;
   let saveTimeout = null;
   let isEditorDirty = false;
 
@@ -94,20 +95,36 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeEditor() {
     editor.classList.remove('editor--open');
     activeNoteId = null;
+    isNewNote = false;
     renderGrid();
   }
 
   function saveCurrentNote() {
+    const title = editorTitle.value.trim();
+    const content = editorContent.innerHTML.trim();
+    const isEmpty = title === '' && (content === '' || content === '<br>');
+
+    if (isNewNote) {
+      if (isEmpty) return;
+      const note = {
+        id: generateId(),
+        title,
+        content,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      notes.unshift(note);
+      activeNoteId = note.id;
+      isNewNote = false;
+      saveNotes();
+      isEditorDirty = false;
+      return;
+    }
+
     if (!activeNoteId) return;
     const note = notes.find(n => n.id === activeNoteId);
     if (!note) return;
-
-    const title = editorTitle.value.trim();
-    const content = editorContent.innerHTML.trim();
-
-    if (title === '' && (content === '' || content === '<br>')) {
-      return;
-    }
+    if (isEmpty) return;
 
     note.title = title;
     note.content = content;
@@ -117,17 +134,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createNote() {
-    const note = {
-      id: generateId(),
-      title: '',
-      content: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    };
-    notes.unshift(note);
-    saveNotes();
-    renderGrid();
-    openEditor(note.id);
+    editorTitle.value = '';
+    editorContent.innerHTML = '';
+    editorDate.textContent = '';
+    activeNoteId = null;
+    isNewNote = true;
+    isEditorDirty = false;
+    editor.classList.add('editor--open');
+    setTimeout(() => editorContent.focus(), 350);
   }
 
   function deleteNote(id) {
