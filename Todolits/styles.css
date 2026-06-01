@@ -9,10 +9,38 @@
   --color-completed: #b2bec3;
   --color-danger: #ff6b6b;
   --color-shadow: rgba(0, 0, 0, 0.08);
+  --color-theme-btn: #636e72;
+  --color-theme-btn-hover: #2d3436;
   --radius: 12px;
   --radius-sm: 8px;
   --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   --transition: 300ms ease;
+}
+
+[data-theme="dark"] {
+  --color-bg: #1a1a2e;
+  --color-surface: #16213e;
+  --color-text: #e4e4e7;
+  --color-text-secondary: #a1a1aa;
+  --color-border: #2d2d44;
+  --color-completed: #52525b;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-theme-btn: #a1a1aa;
+  --color-theme-btn-hover: #e4e4e7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    --color-bg: #1a1a2e;
+    --color-surface: #16213e;
+    --color-text: #e4e4e7;
+    --color-text-secondary: #a1a1aa;
+    --color-border: #2d2d44;
+    --color-completed: #52525b;
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-theme-btn: #a1a1aa;
+    --color-theme-btn-hover: #e4e4e7;
+  }
 }
 
 *,
@@ -39,13 +67,43 @@ body {
   max-width: 540px;
 }
 
+.todoapp__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
 .todoapp__title {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--color-primary);
   text-align: center;
-  margin-bottom: 1.5rem;
   letter-spacing: -0.5px;
+}
+
+.todoapp__theme-btn {
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--color-theme-btn);
+  background: none;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), transform var(--transition);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.todoapp__theme-btn:hover {
+  color: var(--color-theme-btn-hover);
+  border-color: var(--color-theme-btn-hover);
+  transform: scale(1.1);
 }
 
 .todo-form {
@@ -120,6 +178,16 @@ body {
 
 .todo-item:hover {
   background: rgba(108, 99, 255, 0.03);
+}
+
+[data-theme="dark"] .todo-item:hover {
+  background: rgba(108, 99, 255, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .todo-item:hover {
+    background: rgba(108, 99, 255, 0.08);
+  }
 }
 
 .todo-item__checkbox {

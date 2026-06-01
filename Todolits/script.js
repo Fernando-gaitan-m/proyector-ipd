@@ -7,8 +7,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.getElementById('clearCompleted');
   const filterBtns = document.querySelectorAll('.todoapp__filter');
 
+  const themeToggle = document.getElementById('themeToggle');
   let todos = loadTodos();
   let currentFilter = 'all';
+
+  function getPreferredTheme() {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+    themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro');
+  }
+
+  let currentTheme = getPreferredTheme();
+  applyTheme(currentTheme);
+
+  themeToggle.addEventListener('click', () => {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', currentTheme);
+    applyTheme(currentTheme);
+  });
 
   function loadTodos() {
     try {
