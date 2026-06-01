@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Todolist - Gestión de tareas simple y eficiente">
+  <title>TodoList</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="todoapp">
+    <h1 class="todoapp__title">TodoList</h1>
+
+    <section class="todoapp__new">
+      <form class="todo-form" id="todoForm" aria-label="Nueva tarea">
+        <input
+          type="text"
+          class="todo-form__input"
+          id="todoInput"
+          placeholder="¿Qué necesitas hacer?"
+          autocomplete="off"
+          required
+          aria-label="Nueva tarea"
+        >
+        <button type="submit" class="todo-form__btn" aria-label="Agregar tarea">
+          +
+        </button>
+      </form>
+    </section>
+
+    <section class="todoapp__list" aria-label="Lista de tareas">
+      <ul class="todo-list" id="todoList"></ul>
+    </section>
+
+    <footer class="todoapp__footer" id="todoFooter">
+      <span class="todoapp__count" id="itemCount">0 tareas pendientes</span>
+      <nav class="todoapp__filters" aria-label="Filtros">
+        <button class="todoapp__filter todoapp__filter--active" data-filter="all">Todas</button>
+        <button class="todoapp__filter" data-filter="active">Activas</button>
+        <button class="todoapp__filter" data-filter="completed">Completadas</button>
+      </nav>
+      <button class="todoapp__clear" id="clearCompleted">Limpiar completadas</button>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
