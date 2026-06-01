@@ -375,19 +375,19 @@ body {
 
 @keyframes editorIn {
   from {
-    clip-path: circle(0% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+    clip-path: circle(0% at var(--clip-x, calc(100% - 2.75rem)) var(--clip-y, calc(100% - 2.75rem)));
   }
   to {
-    clip-path: circle(150% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+    clip-path: circle(150% at var(--clip-x, calc(100% - 2.75rem)) var(--clip-y, calc(100% - 2.75rem)));
   }
 }
 
 @keyframes editorOut {
   from {
-    clip-path: circle(150% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+    clip-path: circle(150% at var(--clip-x, calc(100% - 2.75rem)) var(--clip-y, calc(100% - 2.75rem)));
   }
   to {
-    clip-path: circle(0% at calc(100% - 2.75rem) calc(100% - 2.75rem));
+    clip-path: circle(0% at var(--clip-x, calc(100% - 2.75rem)) var(--clip-y, calc(100% - 2.75rem)));
   }
 }
 

@@ -67,11 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
-  function openEditor(noteId) {
+  function openEditor(noteId, originX, originY) {
     activeNoteId = noteId;
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
 
+    closeOriginX = originX;
+    closeOriginY = originY;
+    document.documentElement.style.setProperty('--clip-x', originX);
+    document.documentElement.style.setProperty('--clip-y', originY);
     editorTitle.value = note.title || '';
     editorContent.innerHTML = note.content || '';
     editorDate.textContent = `Creada: ${new Date(note.createdAt).toLocaleString('es')}  ·  Modificada: ${new Date(note.updatedAt).toLocaleString('es')}`;
@@ -93,21 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 350);
   }
 
+  let closeOriginX = 'calc(100% - 2.75rem)';
+  let closeOriginY = 'calc(100% - 2.75rem)';
+
   function closeEditor() {
     if (editor.classList.contains('editor--closing')) return;
     if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; }
+    document.documentElement.style.setProperty('--clip-x', closeOriginX);
+    document.documentElement.style.setProperty('--clip-y', closeOriginY);
     editor.classList.remove('editor--open');
     editor.classList.add('editor--closing');
     setTimeout(() => {
       editor.classList.remove('editor--closing');
       activeNoteId = null;
       isNewNote = false;
-  renderGrid();
-
-  setTimeout(() => {
-    splash.classList.add('splash--hide');
-    setTimeout(() => splash.classList.add('splash--removed'), 500);
-  }, 1100);
+      renderGrid();
     }, 250);
   }
 
@@ -153,6 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
     activeNoteId = null;
     isNewNote = true;
     isEditorDirty = false;
+    closeOriginX = 'calc(100% - 2.75rem)';
+    closeOriginY = 'calc(100% - 2.75rem)';
+    document.documentElement.style.setProperty('--clip-x', closeOriginX);
+    document.documentElement.style.setProperty('--clip-y', closeOriginY);
     editor.classList.add('editor--open');
     setTimeout(() => editorContent.focus(), 350);
   }
@@ -214,7 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   notesGrid.addEventListener('click', (e) => {
     const card = e.target.closest('.note-card');
-    if (card) openEditor(card.dataset.id);
+    if (card) {
+      const r = card.getBoundingClientRect();
+      const cx = (r.left + r.width / 2) + 'px';
+      const cy = (r.top + r.height / 2) + 'px';
+      openEditor(card.dataset.id, cx, cy);
+    }
   });
 
   editorBack.addEventListener('click', () => {
